@@ -8,7 +8,7 @@ const Note = ({ item, handleRemoveNote }) => (
     <View style={{ backgroundColor: '#454B4E', margin: 10, padding: 15, borderRadius:10, width: Dimensions.get('window').width - 40 }}>
       <Text style={{ color: 'white', padding:5, fontSize:18 }}>{item.title}</Text>
       <Text style={{ color: 'white', padding:5, fontSize:16 }}>{item.description}</Text>
-      <Text style={{ color: 'white', padding:5, fontSize:16 }}>{item.category}</Text>
+      <Text style={{ color: 'grey', padding:5, fontSize:14, textAlign:'right' }}>category: {item.category}</Text>
       <Text style={{ color: 'grey', fontSize:14, marginTop:10, textAlign:'right' }}>  {item.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} {"  "} {item.date.toLocaleDateString()}</Text>
     </View>
   </TouchableOpacity>
@@ -33,7 +33,8 @@ export default function HomeScreen() {
     const fetchNotes = async () => {
       const storedNotes = await AsyncStorage.getItem('notes');
       if (storedNotes) {
-        const notesWithDates = JSON.parse(storedNotes).map(note => ({ ...note, date: new Date(note.date) }));
+        let notesWithDates = JSON.parse(storedNotes).map(note => ({ ...note, date: new Date(note.date) }));
+        notesWithDates.sort((a, b) => b.date - a.date); // sort notes based on date
         setNotes(notesWithDates);
       }
     };
@@ -41,7 +42,8 @@ export default function HomeScreen() {
     const fetchDeletedNotes = async () => {
       const storedDeletedNotes = await AsyncStorage.getItem('deletedNotes');
       if (storedDeletedNotes) {
-        const deletedNotesWithDates = JSON.parse(storedDeletedNotes).map(note => ({ ...note, date: new Date(note.date) }));
+        let deletedNotesWithDates = JSON.parse(storedDeletedNotes).map(note => ({ ...note, date: new Date(note.date) }));
+        deletedNotesWithDates.sort((a, b) => b.date - a.date); // sort deleted notes based on date
         setDeletedNotes(deletedNotesWithDates);
       }
     };
