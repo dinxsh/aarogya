@@ -8,8 +8,8 @@ export default function ToDoScreen() {
 
   const handleAddTodo = () => {
     if (input.length > 0) {
-      setTodos([...todos, { key: Date.now().toString(), text: input }]);
-      setInput('');
+        setTodos([{ key: Date.now().toString(), text: input }, ...todos]);
+        setInput('');
     }
   };
 
@@ -40,7 +40,7 @@ export default function ToDoScreen() {
         <FlatList
           data={todos}
           renderItem={renderItem}
-          style={{ width: '100%', marginTop: 20 }}
+          style={{ width: '100%', marginTop: 20, width: Dimensions.get('window').width - 40 }}
         />
       </View>
     </View>
