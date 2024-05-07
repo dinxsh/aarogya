@@ -3,9 +3,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BottomNavigation, Text } from 'react-native-paper';
 import HomeScreen from './screens/home';
 import SettingsScreen from './screens/settings';
+import ToDoScreen from './screens/todo';
 
 const navRoutes = [
   { key: 'home', title: ' ', icon: 'home-outline', focusedIcon: 'home', unfocusedIcon: 'home-outline' },
+  { key: 'todo', title: ' ', icon: 'note', focusedIcon: 'note', unfocusedIcon: 'note-outline' },
   { key: 'settings', title: ' ', icon: 'cog', focusedIcon: 'cog', unfocusedIcon: 'cog-outline' },
 ];
 
@@ -15,6 +17,7 @@ export default function App() {
 
   const renderScene = BottomNavigation.SceneMap({
     home: HomeScreen,
+    todo: ToDoScreen,
     settings: SettingsScreen,
   });
 
