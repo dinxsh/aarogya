@@ -3,13 +3,16 @@ import { View, Text, TextInput, FlatList, Dimensions, TouchableOpacity, StyleShe
 import { Searchbar, FAB } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/core';
+import { formatDistanceToNow } from 'date-fns';
+
+const truncate = (input, len) => input.length > len ? `${input.substring(0, len)}...` : input;
 
 const Note = ({ item, handleRemoveNote }) => (
   <TouchableOpacity onPress={() => handleRemoveNote(item.key)}>
     <View style={{ backgroundColor: '#454B4E', margin: 10, padding: 15, borderRadius:10, width: Dimensions.get('window').width - 40 }}>
       <Text style={{ color: 'white', padding:5, fontSize:18 }}>{item.title}</Text>
-      <Text style={{ color: 'white', padding:5, fontSize:16 }}>{item.description}</Text>
-      <Text style={{ color: 'grey', fontSize:14, marginTop:10, textAlign:'right' }}>  {item.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} {"  "} {item.date.toLocaleDateString()}</Text>
+      <Text style={{ color: 'white', padding:5, fontSize:16 }}>{truncate(item.description, 45)}</Text>
+      <Text style={{ color: 'grey', fontSize:14, marginTop:10, textAlign:'right' }}>{formatDistanceToNow(item.date, { addSuffix: true })}</Text>
     </View>
   </TouchableOpacity>
 );
@@ -18,7 +21,7 @@ export default function HomeScreen() {
   const [deletedNotes, setDeletedNotes] = useState([]);
   const [notes, setNotes] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isClicked, setIsClicked] = useState(false);
+  const [isClicked, setIsClicked] = useState(true);
   const navigation = useNavigation();
 
   const handleSearch = useCallback((query) => {
