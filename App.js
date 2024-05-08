@@ -1,8 +1,11 @@
 import * as React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BottomNavigation, Text } from 'react-native-paper';
-import HomeScreen from './screens/home';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import HomeScreen from './screens/notes';
 import SettingsScreen from './screens/settings';
+import AddScreen from './screens/notes/add';
 import ToDoScreen from './screens/todo';
 
 const navRoutes = [
@@ -10,6 +13,8 @@ const navRoutes = [
   { key: 'todo', title: ' ', icon: 'note', focusedIcon: 'note', unfocusedIcon: 'note-outline' },
   { key: 'settings', title: ' ', icon: 'cog', focusedIcon: 'cog', unfocusedIcon: 'cog-outline' },
 ];
+
+const Stack = createStackNavigator();
 
 export default function App() {
   const [index, setIndex] = React.useState(0);
@@ -33,16 +38,25 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <BottomNavigation
-        navigationState={{ index, routes }}
-        onIndexChange={setIndex}
-        renderScene={renderScene}
-        activeColor="#2F3438"
-        inactiveColor="#F7F6F3"
-        barStyle={{ backgroundColor: '#2F3438' }}
-        renderTabBarItem={renderTabBarItem}
-        keyboardHidesNavigationBar="true"
-      />
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen name="HomeScreen" options={{ headerShown: false }}>
+            {() => (
+              <BottomNavigation
+                navigationState={{ index, routes }}
+                onIndexChange={setIndex}
+                renderScene={renderScene}
+                activeColor="#2F3438"
+                inactiveColor="#F7F6F3"
+                barStyle={{ backgroundColor: '#2F3438' }}
+                renderTabBarItem={renderTabBarItem}
+                keyboardHidesNavigationBar="true"
+              />
+            )}
+          </Stack.Screen>
+          <Stack.Screen name="AddScreen" component={AddScreen} options={{ headerShown: false }}></Stack.Screen>
+        </Stack.Navigator>
+      </NavigationContainer>
     </SafeAreaProvider>
   );
 }
