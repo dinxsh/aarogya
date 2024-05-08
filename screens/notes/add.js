@@ -2,17 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, TextInput, FlatList, Dimensions, TouchableOpacity, StyleSheet } from 'react-native';
 import { Button, Searchbar, FAB } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const Note = ({ item, handleRemoveNote }) => (
-  <TouchableOpacity onPress={() => handleRemoveNote(item.key)}>
-    <View style={{ backgroundColor: '#454B4E', margin: 10, padding: 15, borderRadius:10, width: Dimensions.get('window').width - 40 }}>
-      <Text style={{ color: 'white', padding:5, fontSize:18 }}>{item.title}</Text>
-      <Text style={{ color: 'white', padding:5, fontSize:16 }}>{item.description}</Text>
-      <Text style={{ color: 'grey', padding:5, fontSize:14, textAlign:'right' }}>category: {item.category}</Text>
-      <Text style={{ color: 'grey', fontSize:14, marginTop:10, textAlign:'right' }}>  {item.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} {"  "} {item.date.toLocaleDateString()}</Text>
-    </View>
-  </TouchableOpacity>
-);
+import { v4 as uuidv4 } from 'uuid';
 
 export default function AddScreen() {
   const [notes, setNotes] = useState([]);
@@ -22,7 +12,7 @@ export default function AddScreen() {
 
   const handleAddNote = useCallback(async () => {
     if (title.length > 0) {
-      const newNotes = [...notes, { key: Date.now().toString(), title: title, description: description, category: category, date: new Date() }];
+      const newNotes = [...notes, { key: uuidv4(), title: title, description: description, category: category, date: new Date() }];
       setNotes(newNotes);
       await AsyncStorage.setItem('notes', JSON.stringify(newNotes));
       setTitle('');
