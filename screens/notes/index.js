@@ -1,9 +1,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, Dimensions, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, RefreshControl, FlatList, Dimensions, TouchableOpacity, StyleSheet } from 'react-native';
 import { Searchbar, FAB } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/core';
 import { formatDistanceToNow } from 'date-fns';
+import Snackbar from 'react-native-snackbar';
 
 const truncate = (input, len) => input.length > len ? `${input.substring(0, len)}...` : input;
 
@@ -24,10 +25,39 @@ export default function HomeScreen() {
   const [notes, setNotes] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isClicked, setIsClicked] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
 
   const handleSearch = useCallback((query) => {
     setSearchQuery(query);
+  }, []);
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    const fetchNotes = async () => {
+      try {
+        const storedNotes = await AsyncStorage.getItem('notes');
+        if (storedNotes) {
+          let notesWithDates = JSON.parse(storedNotes).map(note => ({ ...note, date: new Date(note.date) }));
+          notesWithDates.sort((a, b) => b.date - a.date);
+          setNotes(notesWithDates);
+        }
+      } catch (error) {
+        Snackbar.show({
+          text: 'Error fetching notes: ' + error.message,
+          duration: Snackbar.LENGTH_SHORT,
+          backgroundColor: 'red',
+        });
+      } finally {
+        setRefreshing(false);
+        Snackbar.show({
+          text: 'Notes Loaded',
+          duration: Snackbar.LENGTH_SHORT,
+          backgroundColor: 'grey',
+        });
+      }
+    };
+    fetchNotes();
   }, []);
 
   const filteredNotes = notes.filter(note => note.title.includes(searchQuery) || note.description.includes(searchQuery));
@@ -95,6 +125,12 @@ export default function HomeScreen() {
           data={isClicked ? filteredNotes : deletedNotes}
           renderItem={(props) => <Note {...props} handleRemoveNote={isClicked ? handleRemoveNote : ()=>{}} />}
           style={{ width: '100%', marginTop: 20 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
+          }
         /> 
 
         <FAB

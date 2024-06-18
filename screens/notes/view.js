@@ -2,11 +2,13 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, TextInput, Dimensions} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome5, Feather, Entypo } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/core';
 
 export default function ViewScreen({ route }) {
   const [notes, setNotes] = useState([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -61,7 +63,7 @@ export default function ViewScreen({ route }) {
                 <Feather name="edit" size={24} color="white" />
             </View>
             <View style={{ padding: 10, borderRadius: 50, borderWidth: 1, borderColor: 'white', marginLeft: 10  }}>
-                <Entypo name="cross" size={24} color="white" />
+                <Entypo name="cross" size={24} color="white" onPress={()=> {navigation.navigate('HomeScreen')} } />
             </View>
         </View>
 
