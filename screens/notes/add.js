@@ -2,22 +2,25 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, TextInput, FlatList, Dimensions, TouchableOpacity, StyleSheet } from 'react-native';
 import { Button, Searchbar, FAB } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { v4 as uuidv4 } from 'uuid';
+import { useNavigation } from '@react-navigation/core';
+import uuid from 'react-native-uuid';
 
 export default function AddScreen() {
   const [notes, setNotes] = useState([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
+  const navigation = useNavigation();
 
   const handleAddNote = useCallback(async () => {
     if (title.length > 0) {
-      const newNotes = [...notes, { key: uuidv4(), title: title, description: description, category: category, date: new Date() }];
+      const newNotes = [...notes, { key: uuid.v4(), title: title, description: description, category: category, date: new Date() }];
       setNotes(newNotes);
       await AsyncStorage.setItem('notes', JSON.stringify(newNotes));
       setTitle('');
       setDescription('');
       setCategory('');
+      navigation.navigate('HomeScreen');
     }
   }, [title, description, notes]);
 

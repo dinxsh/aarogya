@@ -7,15 +7,17 @@ import { formatDistanceToNow } from 'date-fns';
 
 const truncate = (input, len) => input.length > len ? `${input.substring(0, len)}...` : input;
 
-const Note = ({ item, handleRemoveNote }) => (
-  <TouchableOpacity onPress={() => handleRemoveNote(item.key)}>
+const Note = ({ item }) => { 
+  const navigation = useNavigation();
+  return (
+  <TouchableOpacity onPress={() => navigation.navigate('ViewScreen', {id: item.key})}>
     <View style={{ backgroundColor: '#454B4E', margin: 10, padding: 15, borderRadius:10, width: Dimensions.get('window').width - 40 }}>
       <Text style={{ color: 'white', padding:5, fontSize:18 }}>{item.title}</Text>
       <Text style={{ color: 'white', padding:5, fontSize:16 }}>{truncate(item.description, 45)}</Text>
       <Text style={{ color: 'grey', fontSize:14, marginTop:10, textAlign:'right' }}>{formatDistanceToNow(item.date, { addSuffix: true })}</Text>
     </View>
   </TouchableOpacity>
-);
+)};
 
 export default function HomeScreen() {
   const [deletedNotes, setDeletedNotes] = useState([]);
@@ -31,12 +33,12 @@ export default function HomeScreen() {
   const filteredNotes = notes.filter(note => note.title.includes(searchQuery) || note.description.includes(searchQuery));
 
   useEffect(() => {
-  const intervalId = setInterval(async () => { // assign interval to a variable to clear it.
+  const intervalId = setInterval(async () => {
     const fetchNotes = async () => {
       const storedNotes = await AsyncStorage.getItem('notes');
       if (storedNotes) {
         let notesWithDates = JSON.parse(storedNotes).map(note => ({ ...note, date: new Date(note.date) }));
-        notesWithDates.sort((a, b) => b.date - a.date); // sort notes based on date
+        notesWithDates.sort((a, b) => b.date - a.date);
         setNotes(notesWithDates);
       }
     };
@@ -45,7 +47,7 @@ export default function HomeScreen() {
       const storedDeletedNotes = await AsyncStorage.getItem('deletedNotes');
       if (storedDeletedNotes) {
         let deletedNotesWithDates = JSON.parse(storedDeletedNotes).map(note => ({ ...note, date: new Date(note.date) }));
-        deletedNotesWithDates.sort((a, b) => b.date - a.date); // sort deleted notes based on date
+        deletedNotesWithDates.sort((a, b) => b.date - a.date);
         setDeletedNotes(deletedNotesWithDates);
       }
     };
@@ -75,7 +77,7 @@ export default function HomeScreen() {
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor:'#373C3F'}}>
-      <View style={{marginTop:50}}>
+      <View style={{marginTop:30}}>
         
         <Text style={{ color: 'white', padding:5, fontSize:22, width: Dimensions.get('window').width - 20 }}>
             {isClicked ? "Notes" : "Deleted Notes"}

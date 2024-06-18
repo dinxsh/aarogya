@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { BottomNavigation, Text } from 'react-native-paper';
+import { BottomNavigation } from 'react-native-paper';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+
 import HomeScreen from './screens/notes';
 import SettingsScreen from './screens/settings';
 import AddScreen from './screens/notes/add';
+import ViewScreen from './screens/notes/view';
 import ToDoScreen from './screens/todo';
 
 const navRoutes = [
@@ -55,6 +57,7 @@ export default function App() {
             )}
           </Stack.Screen>
           <Stack.Screen name="AddScreen" component={AddScreen} options={{ headerShown: false }}></Stack.Screen>
+          <Stack.Screen name="ViewScreen" component={ViewScreen} options={{ headerShown: false }}></Stack.Screen>
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
