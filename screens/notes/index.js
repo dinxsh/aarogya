@@ -4,21 +4,21 @@ import { Searchbar, FAB } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/core';
 import { formatDistanceToNow } from 'date-fns';
-import Snackbar from 'react-native-snackbar';
 
 const truncate = (input, len) => input.length > len ? `${input.substring(0, len)}...` : input;
 
-const Note = ({ item }) => { 
+const Note = ({ item }) => {
   const navigation = useNavigation();
   return (
-  <TouchableOpacity onPress={() => navigation.navigate('ViewScreen', {id: item.key})}>
-    <View style={{ backgroundColor: '#454B4E', margin: 10, padding: 15, borderRadius:10, width: Dimensions.get('window').width - 40 }}>
-      <Text style={{ color: 'white', padding:5, fontSize:18 }}>{item.title}</Text>
-      <Text style={{ color: 'white', padding:5, fontSize:16 }}>{truncate(item.description, 45)}</Text>
-      <Text style={{ color: 'grey', fontSize:14, marginTop:10, textAlign:'right' }}>{formatDistanceToNow(item.date, { addSuffix: true })}</Text>
-    </View>
-  </TouchableOpacity>
-)};
+    <TouchableOpacity onPress={() => navigation.navigate('ViewScreen', { id: item.key })}>
+      <View style={styles.noteContainer}>
+        <Text style={styles.noteTitle}>{item.title}</Text>
+        <Text style={styles.noteDescription}>{truncate(item.description, 45)}</Text>
+        <Text style={styles.noteDate}>{formatDistanceToNow(item.date, { addSuffix: true })}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 export default function HomeScreen() {
   const [deletedNotes, setDeletedNotes] = useState([]);
@@ -43,18 +43,9 @@ export default function HomeScreen() {
           setNotes(notesWithDates);
         }
       } catch (error) {
-        Snackbar.show({
-          text: 'Error fetching notes: ' + error.message,
-          duration: Snackbar.LENGTH_SHORT,
-          backgroundColor: 'red',
-        });
+        // Handle error
       } finally {
         setRefreshing(false);
-        Snackbar.show({
-          text: 'Notes Loaded',
-          duration: Snackbar.LENGTH_SHORT,
-          backgroundColor: 'grey',
-        });
       }
     };
     fetchNotes();
@@ -63,33 +54,33 @@ export default function HomeScreen() {
   const filteredNotes = notes.filter(note => note.title.includes(searchQuery) || note.description.includes(searchQuery));
 
   useEffect(() => {
-  const intervalId = setInterval(async () => {
-    const fetchNotes = async () => {
-      const storedNotes = await AsyncStorage.getItem('notes');
-      if (storedNotes) {
-        let notesWithDates = JSON.parse(storedNotes).map(note => ({ ...note, date: new Date(note.date) }));
-        notesWithDates.sort((a, b) => b.date - a.date);
-        setNotes(notesWithDates);
-      }
+    const intervalId = setInterval(async () => {
+      const fetchNotes = async () => {
+        const storedNotes = await AsyncStorage.getItem('notes');
+        if (storedNotes) {
+          let notesWithDates = JSON.parse(storedNotes).map(note => ({ ...note, date: new Date(note.date) }));
+          notesWithDates.sort((a, b) => b.date - a.date);
+          setNotes(notesWithDates);
+        }
+      };
+
+      const fetchDeletedNotes = async () => {
+        const storedDeletedNotes = await AsyncStorage.getItem('deletedNotes');
+        if (storedDeletedNotes) {
+          let deletedNotesWithDates = JSON.parse(storedDeletedNotes).map(note => ({ ...note, date: new Date(note.date) }));
+          deletedNotesWithDates.sort((a, b) => b.date - a.date);
+          setDeletedNotes(deletedNotesWithDates);
+        }
+      };
+
+      fetchNotes();
+      fetchDeletedNotes();
+    }, 1000);
+
+    return () => {
+      clearInterval(intervalId);
     };
-
-    const fetchDeletedNotes = async () => {
-      const storedDeletedNotes = await AsyncStorage.getItem('deletedNotes');
-      if (storedDeletedNotes) {
-        let deletedNotesWithDates = JSON.parse(storedDeletedNotes).map(note => ({ ...note, date: new Date(note.date) }));
-        deletedNotesWithDates.sort((a, b) => b.date - a.date);
-        setDeletedNotes(deletedNotesWithDates);
-      }
-    };
-
-    fetchNotes();
-    fetchDeletedNotes();
-  }, 1000);
-
-  return () => {
-    clearInterval(intervalId);
-  };
-}, []);
+  }, []);
 
   const handleRemoveNote = useCallback(async (key) => {
     const newDeletedNotes = [...deletedNotes, notes.find(note => note.key === key)];
@@ -100,66 +91,117 @@ export default function HomeScreen() {
     await AsyncStorage.setItem('notes', JSON.stringify(newNotes));
   }, [notes, deletedNotes]);
 
-
   const handleTaskToggle = useCallback(() => {
     setIsClicked(prevIsClicked => !prevIsClicked);
   }, []);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor:'#373C3F'}}>
-      <View style={{marginTop:30}}>
-        
-        <Text style={{ color: 'white', padding:5, fontSize:22, width: Dimensions.get('window').width - 20 }}>
-            {isClicked ? "Notes" : "Deleted Notes"}
-        </Text>
-
-        <View style={{ marginTop:30 }}>
-          <Searchbar
-            style={{backgroundColor:'darkgray', height:50 }}
-            onChangeText={handleSearch}
-            value={searchQuery}
-          />
-        </View>
-
-        <FlatList
-          data={isClicked ? filteredNotes : deletedNotes}
-          renderItem={(props) => <Note {...props} handleRemoveNote={isClicked ? handleRemoveNote : ()=>{}} />}
-          style={{ width: '100%', marginTop: 20 }}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-            />
-          }
-        /> 
-
-        <FAB
-          icon={isClicked ? "delete" : "restore"}
-          style={{...styles.fab, backgroundColor: 'darkgray'}}
-          color={'#373C3F'}
-          onPress={handleTaskToggle}
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerText}>{isClicked ? "Notes" : "Deleted Notes"}</Text>
+        <Searchbar
+          style={styles.searchbar}
+          onChangeText={handleSearch}
+          value={searchQuery}
         />
-
-        <FAB
-          icon={"plus"}
-          style={{backgroundColor: 'darkgray', position: 'absolute',
-          margin: 16,
-          right: 0,
-          bottom: 0}}
-          color={'#373C3F'}
-          onPress={()=> {navigation.navigate('AddScreen')}}
-        />
-
       </View>
+
+      <FlatList
+        data={isClicked ? filteredNotes : deletedNotes}
+        renderItem={(props) => <Note {...props} handleRemoveNote={isClicked ? handleRemoveNote : () => { }} />}
+        style={styles.flatList}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        }
+      />
+
+      <FAB
+        icon={isClicked ? "delete" : "restore"}
+        style={styles.fabLeft}
+        color={'#373C3F'}
+        onPress={handleTaskToggle}
+      />
+
+      <FAB
+        icon={"plus"}
+        style={styles.fabRight}
+        color={'#373C3F'}
+        onPress={() => { navigation.navigate('AddScreen') }}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  fab: {
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  header: {
+    marginTop: 30,
+    width: '100%',
+  },
+  headerText: {
+    color: '#333',
+    padding: 5,
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+  searchbar: {
+    backgroundColor: '#e0e0e0',
+    height: 50,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  flatList: {
+    width: '100%',
+    marginTop: 20,
+  },
+  noteContainer: {
+    backgroundColor: '#fff',
+    margin: 10,
+    padding: 15,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  noteTitle: {
+    color: '#333',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  noteDescription: {
+    color: '#666',
+    fontSize: 16,
+    marginTop: 5,
+  },
+  noteDate: {
+    color: '#999',
+    fontSize: 12,
+    marginTop: 10,
+    textAlign: 'right',
+  },
+  fabLeft: {
     position: 'absolute',
     margin: 16,
     left: 0,
     bottom: 0,
+    backgroundColor: '#e0e0e0',
   },
-})
+  fabRight: {
+    position: 'absolute',
+    margin: 16,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#e0e0e0',
+  },
+});

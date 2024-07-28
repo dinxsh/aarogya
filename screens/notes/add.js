@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, Dimensions, TouchableOpacity, StyleSheet } from 'react-native';
-import { Button, Searchbar, FAB } from 'react-native-paper';
+import React, { useState, useCallback } from 'react';
+import { View, Text, TextInput, Dimensions, StyleSheet } from 'react-native';
+import { Button } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/core';
 import uuid from 'react-native-uuid';
@@ -25,39 +25,86 @@ export default function AddScreen() {
   }, [title, description, notes]);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor:'#373C3F'}}>
-      <View style={{marginTop:50}}>
-
-        <Text style={{ color: 'white', padding:5, fontSize:20, marginBottom:10 }}>
-            Add Note
-        </Text>
-
+    <View style={styles.container}>
+      <View style={styles.form}>
+        <Text style={styles.headerText}>Add Note</Text>
         <TextInput
-          style={{ borderColor: 'white', padding:10, color:'white', height: 50, borderColor: 'gray', borderWidth: 1, width: Dimensions.get('window').width - 20, marginBottom: 20, borderRadius:10 }}
+          style={styles.input}
           onChangeText={setTitle}
           value={title}
           placeholder="Title"
-          placeholderTextColor='grey'
+          placeholderTextColor='#B0B0B0'
         />
         <TextInput
-          style={{ borderColor: 'white', padding:10, color:'white', flex: 1, borderColor: 'gray', borderWidth: 1, width: Dimensions.get('window').width - 20, marginBottom: 20, borderRadius:10 }}
+          style={[styles.input, styles.textArea]}
           onChangeText={setDescription}
           value={description}
           placeholder="Description"
-          placeholderTextColor='grey'
+          placeholderTextColor='#B0B0B0'
           numberOfLines={3}
           textAlignVertical='top'
           multiline
         />
         <TextInput
-          style={{ borderColor: 'white', padding:10, color:'white', height: 50, borderColor: 'gray', borderWidth: 1, width: Dimensions.get('window').width - 20, marginBottom: 20, borderRadius:10 }}
+          style={styles.input}
           onChangeText={setCategory}
           value={category}
           placeholder="Category"
-          placeholderTextColor='grey'
+          placeholderTextColor='#B0B0B0'
         />
-        <Button onPress={handleAddNote} style={{ backgroundColor:'white', width: Dimensions.get('window').width - 20 }} textColor='#3F4448'> Add Note </Button>
+        <Button onPress={handleAddNote} style={styles.button} textColor='#FFFFFF'>Add Note</Button>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#F5F5F5',
+  },
+  form: {
+    marginTop: 50,
+    width: '100%',
+    alignItems: 'center',
+  },
+  headerText: {
+    color: '#333',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  input: {
+    backgroundColor: '#FFFFFF',
+    padding: 10,
+    color: '#333',
+    height: 50,
+    borderColor: '#E0E0E0',
+    borderWidth: 1,
+    width: Dimensions.get('window').width - 40,
+    marginBottom: 20,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  textArea: {
+    height: 100,
+  },
+  button: {
+    backgroundColor: '#2F3438',
+    width: Dimensions.get('window').width - 40,
+    padding: 10,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+});
