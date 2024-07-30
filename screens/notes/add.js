@@ -11,6 +11,7 @@ export default function AddScreen() {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const navigation = useNavigation();
+  const { height: deviceHeight } = Dimensions.get('window');
 
   const handleAddNote = useCallback(async () => {
     if (title.length > 0) {
@@ -27,12 +28,18 @@ export default function AddScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.form}>
-        <Text style={styles.headerText}>Add Note</Text>
         <TextInput
           style={styles.input}
           onChangeText={setTitle}
           value={title}
           placeholder="Title"
+          placeholderTextColor='#B0B0B0'
+        />
+         <TextInput
+          style={styles.input}
+          onChangeText={setCategory}
+          value={category}
+          placeholder="Category"
           placeholderTextColor='#B0B0B0'
         />
         <TextInput
@@ -45,13 +52,7 @@ export default function AddScreen() {
           textAlignVertical='top'
           multiline
         />
-        <TextInput
-          style={styles.input}
-          onChangeText={setCategory}
-          value={category}
-          placeholder="Category"
-          placeholderTextColor='#B0B0B0'
-        />
+       
         <Button onPress={handleAddNote} style={styles.button} textColor='#FFFFFF'>Add Note</Button>
       </View>
     </View>
@@ -67,7 +68,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
   },
   form: {
-    marginTop: 50,
     width: '100%',
     alignItems: 'center',
   },
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   textArea: {
-    height: 100,
+    height: Dimensions.get('window').height - 400,
   },
   button: {
     backgroundColor: '#2F3438',

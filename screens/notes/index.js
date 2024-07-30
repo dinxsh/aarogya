@@ -99,10 +99,13 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>{isClicked ? "Notes" : "Deleted Notes"}</Text>
+        <Text style={styles.headerText} onPress={()=> navigation.navigate("SignUpScreen")}>Sign Up</Text>
+        <Text style={styles.headerText} onPress={()=> navigation.navigate("SignInScreen")}>Sign In</Text>
         <Searchbar
           style={styles.searchbar}
           onChangeText={handleSearch}
           value={searchQuery}
+          placeholder='Search Notes'
         />
       </View>
 
@@ -155,7 +158,6 @@ const styles = StyleSheet.create({
   },
   searchbar: {
     backgroundColor: '#e0e0e0',
-    height: 50,
     borderRadius: 10,
     marginTop: 10,
   },
@@ -165,7 +167,7 @@ const styles = StyleSheet.create({
   },
   noteContainer: {
     backgroundColor: '#fff',
-    margin: 10,
+    marginVertical: 10,
     padding: 15,
     borderRadius: 10,
     shadowColor: '#000',
