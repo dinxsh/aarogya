@@ -81,7 +81,7 @@ export default function App() {
                 )}
               </Stack.Screen>
               <Stack.Screen name="AddScreen" component={AddScreen} options={{ headerShown: true, title:"Add Note" }}></Stack.Screen>
-              <Stack.Screen name="ViewScreen" component={ViewScreen} options={{ headerShown: false }}></Stack.Screen>
+              <Stack.Screen name="ViewScreen" component={ViewScreen} options={{ headerShown: true }}></Stack.Screen>
             </>
           ) : (
             <>

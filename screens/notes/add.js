@@ -11,7 +11,6 @@ export default function AddScreen() {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const navigation = useNavigation();
-  const { height: deviceHeight } = Dimensions.get('window');
 
   const handleAddNote = useCallback(async () => {
     if (title.length > 0) {

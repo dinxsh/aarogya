@@ -99,8 +99,6 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>{isClicked ? "Notes" : "Deleted Notes"}</Text>
-        <Text style={styles.headerText} onPress={()=> navigation.navigate("SignUpScreen")}>Sign Up</Text>
-        <Text style={styles.headerText} onPress={()=> navigation.navigate("SignInScreen")}>Sign In</Text>
         <Searchbar
           style={styles.searchbar}
           onChangeText={handleSearch}
