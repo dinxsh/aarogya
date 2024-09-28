@@ -11,6 +11,11 @@ import AddScreen from './screens/notes/add';
 import ViewScreen from './screens/notes/view';
 import ToDoScreen from './screens/todo';
 
+import StepsScreen from './screens/steps';
+import CaloriesScreen from './screens/calories';
+import SleepScreen from './screens/sleep';
+import GoalsScreen from './screens/goals';
+
 import SignIn from './screens/auth/signin';
 import SignUp from './screens/auth/signup';
 
@@ -18,7 +23,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 const navRoutes = [
   { key: 'home', title: ' ', icon: 'home-outline', focusedIcon: 'home', unfocusedIcon: 'home-outline' },
-  { key: 'todo', title: ' ', icon: 'note', focusedIcon: 'note', unfocusedIcon: 'note-outline' },
+  { key: 'goals', title: ' ', icon: 'dart-board', focusedIcon: 'dart-board', unfocusedIcon: 'dart-board-outline' },
   { key: 'settings', title: ' ', icon: 'cog', focusedIcon: 'cog', unfocusedIcon: 'cog-outline' },
 ];
 
@@ -46,7 +51,7 @@ export default function App() {
 
   const renderScene = BottomNavigation.SceneMap({
     home: HomeScreen,
-    todo: ToDoScreen,
+    goals: GoalsScreen,
     settings: SettingsScreen,
   });
 
@@ -55,8 +60,13 @@ export default function App() {
       key={route.key}
       route={route}
       focused={focused}
-      icon={route.icon}
-      style={{ backgroundColor: focused ? '#FFFFFF' : '#F7F6F3', borderRadius: 10, margin: 5 }}
+      icon={focused ? route.focusedIcon : route.unfocusedIcon}
+      style={{
+        backgroundColor: focused ? '#1976D2' : '#2196F3',
+        borderRadius: 20,
+        margin: 5,
+        paddingVertical: 8,
+      }}
     />
   );
 
@@ -72,16 +82,29 @@ export default function App() {
                     navigationState={{ index, routes }}
                     onIndexChange={setIndex}
                     renderScene={renderScene}
-                    activeColor="#2F3438"
-                    inactiveColor="#B0B0B0"
-                    barStyle={{ backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#E0E0E0' }}
+                    activeColor="#2196F3"
+                    inactiveColor="#E3F2FD"
+                    barStyle={{
+                      backgroundColor: '#2196F3',
+                      borderTopWidth: 0,
+                      borderTopLeftRadius: 30,
+                      borderTopRightRadius: 30,
+                      overflow: 'hidden',
+                      height: 60,
+                      paddingBottom: 10,
+                    }}
                     renderTabBarItem={renderTabBarItem}
-                    keyboardHidesNavigationBar="true"
+                    keyboardHidesNavigationBar={true}
                   />
                 )}
               </Stack.Screen>
               <Stack.Screen name="AddScreen" component={AddScreen} options={{ headerShown: true, title:"Add Note" }}></Stack.Screen>
               <Stack.Screen name="ViewScreen" component={ViewScreen} options={{ headerShown: true }}></Stack.Screen>
+
+              <Stack.Screen name="StepsScreen" component={StepsScreen} options={{ headerShown: false }}></Stack.Screen>
+              <Stack.Screen name="CaloriesScreen" component={CaloriesScreen} options={{ headerShown: false }}></Stack.Screen>
+              <Stack.Screen name="SleepScreen" component={SleepScreen} options={{ headerShown: false }}></Stack.Screen>
+              <Stack.Screen name="GoalsScreen" component={SleepScreen} options={{ headerShown: false }}></Stack.Screen>
             </>
           ) : (
             <>

@@ -1,137 +1,130 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, RefreshControl, FlatList, Dimensions, TouchableOpacity, StyleSheet } from 'react-native';
-import { Searchbar, FAB } from 'react-native-paper';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/core';
-import { formatDistanceToNow } from 'date-fns';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity, Image } from 'react-native';
+import { LineChart } from 'react-native-chart-kit';
+import { Card, Title, Paragraph, Avatar, ProgressBar, Button, IconButton } from 'react-native-paper';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
 
-const truncate = (input, len) => input.length > len ? `${input.substring(0, len)}...` : input;
+const { width } = Dimensions.get('window');
 
-const Note = ({ item }) => {
+export default function HealthDashboardScreen() {
   const navigation = useNavigation();
-  return (
-    <TouchableOpacity onPress={() => navigation.navigate('ViewScreen', { id: item.key })}>
-      <View style={styles.noteContainer}>
-        <Text style={styles.noteTitle}>{item.title}</Text>
-        <Text style={styles.noteDescription}>{truncate(item.description, 45)}</Text>
-        <Text style={styles.noteDate}>{formatDistanceToNow(item.date, { addSuffix: true })}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-};
+  const [healthMetrics, setHealthMetrics] = useState({
+    steps: { current: 8500, goal: 10000 },
+    calories: { burned: 2100, consumed: 1800, goal: 2000 },
+    goals: { completed: 3, total: 5 },
+    sleep: { current: 7, goal: 8 },
+  });
 
-export default function HomeScreen() {
-  const [deletedNotes, setDeletedNotes] = useState([]);
-  const [notes, setNotes] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isClicked, setIsClicked] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const navigation = useNavigation();
-
-  const handleSearch = useCallback((query) => {
-    setSearchQuery(query);
-  }, []);
-
-  const onRefresh = React.useCallback(() => {
-    setRefreshing(true);
-    const fetchNotes = async () => {
-      try {
-        const storedNotes = await AsyncStorage.getItem('notes');
-        if (storedNotes) {
-          let notesWithDates = JSON.parse(storedNotes).map(note => ({ ...note, date: new Date(note.date) }));
-          notesWithDates.sort((a, b) => b.date - a.date);
-          setNotes(notesWithDates);
-        }
-      } catch (error) {
-        // Handle error
-      } finally {
-        setRefreshing(false);
-      }
-    };
-    fetchNotes();
-  }, []);
-
-  const filteredNotes = notes.filter(note => note.title.includes(searchQuery) || note.description.includes(searchQuery));
+  const [weightData, setWeightData] = useState({
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [{ data: [80, 79.5, 79.8, 79.2, 78.9, 78.5, 78.7] }],
+  });
 
   useEffect(() => {
-    const intervalId = setInterval(async () => {
-      const fetchNotes = async () => {
-        const storedNotes = await AsyncStorage.getItem('notes');
-        if (storedNotes) {
-          let notesWithDates = JSON.parse(storedNotes).map(note => ({ ...note, date: new Date(note.date) }));
-          notesWithDates.sort((a, b) => b.date - a.date);
-          setNotes(notesWithDates);
-        }
-      };
-
-      const fetchDeletedNotes = async () => {
-        const storedDeletedNotes = await AsyncStorage.getItem('deletedNotes');
-        if (storedDeletedNotes) {
-          let deletedNotesWithDates = JSON.parse(storedDeletedNotes).map(note => ({ ...note, date: new Date(note.date) }));
-          deletedNotesWithDates.sort((a, b) => b.date - a.date);
-          setDeletedNotes(deletedNotesWithDates);
-        }
-      };
-
-      fetchNotes();
-      fetchDeletedNotes();
-    }, 1000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
+    // Fetch health metrics data here
   }, []);
 
-  const handleRemoveNote = useCallback(async (key) => {
-    const newDeletedNotes = [...deletedNotes, notes.find(note => note.key === key)];
-    const newNotes = notes.filter(note => note.key !== key);
-    setDeletedNotes(newDeletedNotes);
-    setNotes(newNotes);
-    await AsyncStorage.setItem('deletedNotes', JSON.stringify(newDeletedNotes));
-    await AsyncStorage.setItem('notes', JSON.stringify(newNotes));
-  }, [notes, deletedNotes]);
-
-  const handleTaskToggle = useCallback(() => {
-    setIsClicked(prevIsClicked => !prevIsClicked);
-  }, []);
+  const renderMetricCard = (title, icon, current, goal, unit, color, screen) => (
+    <TouchableOpacity style={styles.cardWrapper} onPress={() => navigation.navigate(screen)}>
+      <LinearGradient
+        colors={[color, color]}
+        style={styles.card}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={styles.cardHeader}>
+          <Avatar.Icon size={40} icon={icon} style={[styles.cardIcon, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]} />
+          <Title style={styles.cardTitle}>{title}</Title>
+        </View>
+        <Paragraph style={styles.metricText}>
+          {current >= 1000 ? `${(current / 1000).toFixed(1)}k` : current} / {goal >= 1000 ? `${(goal / 1000).toFixed(1)}k` : goal} {unit}
+        </Paragraph>
+        <ProgressBar progress={current / goal} color="#FFFFFF" style={styles.progressBar} />
+      </LinearGradient>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>{isClicked ? "Notes" : "Deleted Notes"}</Text>
-        <Searchbar
-          style={styles.searchbar}
-          onChangeText={handleSearch}
-          value={searchQuery}
-          placeholder='Search Notes'
-        />
-      </View>
+      <ScrollView>
+        <LinearGradient
+          colors={['#2196F3', '#1976D2']}
+          style={styles.header}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <View style={styles.headerContent}>
+            <Text style={styles.headerText}>Dashboard</Text>
+            <TouchableOpacity onPress={() => console.log('Profile pressed')}>
+              <Image
+                source={require('../../assets/profile-image.jpg')}
+                style={styles.profileImage}
+              />
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
+        
+        <View style={styles.cardContainer}>
+          {renderMetricCard('Steps', 'walk', healthMetrics.steps.current, healthMetrics.steps.goal, 'steps', '#1E88E5', 'StepsScreen')}
+          {renderMetricCard('Calories', 'fire', healthMetrics.calories.burned, healthMetrics.calories.goal, 'kcal', '#FF5722', 'CaloriesScreen')}
+          {renderMetricCard('Goals', 'flag-checkered', healthMetrics.goals.completed, healthMetrics.goals.total, 'completed', '#4CAF50', 'GoalsScreen')}
+          {renderMetricCard('Sleep', 'sleep', healthMetrics.sleep.current, healthMetrics.sleep.goal, 'hrs', '#9C27B0', 'SleepScreen')}
 
-      <FlatList
-        data={isClicked ? filteredNotes : deletedNotes}
-        renderItem={(props) => <Note {...props} handleRemoveNote={isClicked ? handleRemoveNote : () => { }} />}
-        style={styles.flatList}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-          />
-        }
-      />
+        </View>
 
-      <FAB
-        icon={isClicked ? "delete" : "restore"}
-        style={styles.fabLeft}
-        color={'#373C3F'}
-        onPress={handleTaskToggle}
-      />
+        <Card style={styles.chartCard}>
+          <Card.Content>
+            <View style={styles.chartHeader}>
+              <Title style={styles.chartTitle}>This Week</Title>
+              <View style={styles.chartSummary}>
+                <Text style={styles.chartSummaryText}>Avg: 79.2 kg</Text>
+                <Text style={styles.chartSummaryText}>Change: -1.3 kg</Text>
+              </View>
+            </View>
+            <LineChart
+              data={weightData}
+              width={width - 60}
+              height={220}
+              chartConfig={{
+                backgroundColor: '#FFFFFF',
+                backgroundGradientFrom: '#FFFFFF',
+                backgroundGradientTo: '#FFFFFF',
+                decimalPlaces: 1,
+                color: (opacity = 1) => `rgba(33, 150, 243, ${opacity})`,
+                labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                style: { borderRadius: 16 },
+                propsForDots: { r: '3', strokeWidth: '2', stroke: '#1976D2' },
+              }}
+              bezier
+              style={styles.chart}
+              withInnerLines={false}
+              withOuterLines={false}
+            />
+          </Card.Content>
+        </Card>
 
-      <FAB
-        icon={"plus"}
-        style={styles.fabRight}
-        color={'#373C3F'}
-        onPress={() => { navigation.navigate('AddScreen') }}
-      />
+        <View style={styles.buttonContainer}>
+          <Button
+            mode="contained"
+            icon="plus"
+            onPress={() => console.log('Add Goal pressed')}
+            style={styles.button}
+            labelStyle={styles.buttonLabel}
+          >
+            Add Goal
+          </Button>
+          <Button
+            mode="contained"
+            icon="notebook"
+            onPress={() => console.log('Journal pressed')}
+            style={styles.button}
+            labelStyle={styles.buttonLabel}
+          >
+            Journal
+          </Button>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -139,69 +132,112 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F5F5F5',
   },
   header: {
-    marginTop: 30,
-    width: '100%',
+    padding: 20,
+    paddingTop: 40,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   headerText: {
-    color: '#333',
-    padding: 5,
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: 'bold',
+    color: '#FFFFFF',
   },
-  searchbar: {
-    backgroundColor: '#e0e0e0',
-    borderRadius: 10,
-    marginTop: 10,
+  profileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
   },
-  flatList: {
-    width: '100%',
-    marginTop: 20,
-  },
-  noteContainer: {
-    backgroundColor: '#fff',
-    marginVertical: 10,
+  cardContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     padding: 15,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
   },
-  noteTitle: {
-    color: '#333',
+  cardWrapper: {
+    width: '48%',
+    marginBottom: 15,
+    borderRadius: 15,
+    overflow: 'hidden',
+  },
+  card: {
+    padding: 15,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  cardIcon: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  cardTitle: {
+    marginLeft: 10,
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+  metricText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 10,
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 3,
+  },
+  chartCard: {
+    margin: 15,
+    marginTop: 0,
+    borderRadius: 20,
+    elevation: 4,
+  },
+  chartHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  chartTitle: {
+    color: '#333333',
     fontSize: 18,
     fontWeight: 'bold',
   },
-  noteDescription: {
+  chartSummary: {
+    alignItems: 'flex-end',
+  },
+  chartSummaryText: {
     color: '#666',
-    fontSize: 16,
-    marginTop: 5,
-  },
-  noteDate: {
-    color: '#999',
     fontSize: 12,
-    marginTop: 10,
-    textAlign: 'right',
   },
-  fabLeft: {
-    position: 'absolute',
-    margin: 16,
-    left: 0,
-    bottom: 0,
-    backgroundColor: '#e0e0e0',
+  chart: {
+    marginVertical: 8,
+    borderRadius: 16,
   },
-  fabRight: {
-    position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 0,
-    backgroundColor: '#e0e0e0',
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginHorizontal: 15,
+    marginBottom: 20,
+  },
+  button: {
+    flex: 1,
+    marginHorizontal: 5,
+    backgroundColor: '#2196F3',
+  },
+  buttonLabel: {
+    color: '#FFFFFF',
+    fontSize: 16,
   },
 });

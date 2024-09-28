@@ -1,127 +1,144 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Dimensions, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FontAwesome5, Feather, Entypo } from '@expo/vector-icons';
-import { useNavigation, useRoute } from '@react-navigation/core';
+import { View, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import { LineChart } from 'react-native-chart-kit';
+import { Card, Title, Paragraph } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-export default function ViewScreen() {
-  const [notes, setNotes] = useState([]);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [lastUpdated, setLastUpdated] = useState('');
-  const navigation = useNavigation();
-  const route = useRoute();
+const { width } = Dimensions.get('window');
+
+export default function HealthDashboardScreen() {
+  const [healthMetrics, setHealthMetrics] = useState({
+    steps: { current: 8500, goal: 10000 },
+    calories: { burned: 2100, consumed: 1800, goal: 2000 },
+    water: { current: 1.5, goal: 2.5 },
+    sleep: { current: 7, goal: 8 },
+  });
+
+  const [weightData, setWeightData] = useState({
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [{ data: [80, 79.5, 79.8, 79.2, 78.9, 78.5, 78.7] }],
+  });
 
   useEffect(() => {
-    const fetchNotes = async () => {
-      const storedNotes = await AsyncStorage.getItem('notes');
-      if (storedNotes) {
-        let notesWithDates = JSON.parse(storedNotes).map(note => ({ ...note, date: new Date(note.date) }));
-        notesWithDates.sort((a, b) => b.date - a.date);
-        setNotes(notesWithDates);
-
-        const note = notesWithDates.find(note => note.key === route.params?.id);
-        if (note) {
-          setTitle(note.title);
-          setDescription(note.description);
-          setLastUpdated(note.date.toLocaleString());
-          navigation.setOptions({ title: note.title });
-        }
-      }
-    };
-
-    fetchNotes();
+    // Fetch health metrics data here
   }, []);
 
-  useEffect(() => {
-    const updateNote = async () => {
-      const updatedNotes = notes.map(note => {
-        if (note.key === route.params?.id) {
-          const updatedNote = { ...note, title, description, date: new Date() };
-          setLastUpdated(updatedNote.date.toLocaleString());
-          return updatedNote;
-        }
-        return note;
-      });
-      setNotes(updatedNotes);
-      await AsyncStorage.setItem('notes', JSON.stringify(updatedNotes));
-    };
-
-    if (notes.length > 0) {
-      updateNote();
-    }
-  }, [title, description]);
+  const renderMetricCard = (title, icon, current, goal, unit) => (
+    <Card style={styles.card}>
+      <Card.Content>
+        <View style={styles.cardHeader}>
+          <MaterialCommunityIcons name={icon} size={24} color="#4CAF50" />
+          <Title style={styles.cardTitle}>{title}</Title>
+        </View>
+        <Paragraph style={styles.metricText}>
+          {current} / {goal} {unit}
+        </Paragraph>
+        <View style={styles.progressBar}>
+          <View style={[styles.progress, { width: `${(current / goal) * 100}%` }]} />
+        </View>
+      </Card.Content>
+    </Card>
+  );
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <TextInput
-          style={styles.titleInput}
-          onChangeText={setTitle}
-          value={title}
-          placeholder="Title"
-          placeholderTextColor='grey'
-        />
-        <Text style={styles.lastUpdatedText}>Last Updated: {lastUpdated}</Text>
-        <TextInput
-          style={styles.descriptionInput}
-          onChangeText={setDescription}
-          value={description}
-          placeholder="Description"
-          placeholderTextColor='grey'
-          numberOfLines={10}
-          textAlignVertical='top'
-          multiline
-        />
-      </ScrollView>
-    </View>
+    <ScrollView style={styles.container}>
+      <Text style={styles.headerText}>Health Dashboard</Text>
+      
+      <View style={styles.cardContainer}>
+        {renderMetricCard('Steps', 'walk', healthMetrics.steps.current, healthMetrics.steps.goal, 'steps')}
+        {renderMetricCard('Calories', 'fire', healthMetrics.calories.burned, healthMetrics.calories.goal, 'kcal')}
+        {renderMetricCard('Water', 'cup-water', healthMetrics.water.current, healthMetrics.water.goal, 'L')}
+        {renderMetricCard('Sleep', 'sleep', healthMetrics.sleep.current, healthMetrics.sleep.goal, 'hrs')}
+      </View>
+
+      <Card style={styles.chartCard}>
+        <Card.Content>
+          <Title style={styles.chartTitle}>Weight Trend</Title>
+          <LineChart
+            data={weightData}
+            width={width - 60}
+            height={220}
+            chartConfig={{
+              backgroundColor: '#1E1E1E',
+              backgroundGradientFrom: '#1E1E1E',
+              backgroundGradientTo: '#1E1E1E',
+              decimalPlaces: 1,
+              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+              labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+              style: {
+                borderRadius: 16,
+              },
+              propsForDots: {
+                r: '6',
+                strokeWidth: '2',
+                stroke: '#4CAF50',
+              },
+            }}
+            bezier
+            style={styles.chart}
+          />
+        </Card.Content>
+      </Card>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
-  },
-  scrollContainer: {
-    flexGrow: 1,
+    backgroundColor: '#121212',
     padding: 20,
   },
-  titleInput: {
+  headerText: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333333',
-    marginBottom: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    paddingBottom: 10,
-  },
-  lastUpdatedText: {
-    fontSize: 14,
-    color: 'grey',
+    color: '#FFFFFF',
     marginBottom: 20,
   },
-  descriptionInput: {
-    fontSize: 18,
-    color: '#333333',
-    flex: 1,
-    textAlignVertical: 'top',
-    paddingTop: 10,
-  },
-  iconContainer: {
+  cardContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    padding: 10,
-    backgroundColor: '#FAFAFA',
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
-  iconButton: {
-    padding: 10,
-    borderRadius: 50,
-    borderWidth: 1,
-    borderColor: 'white',
+  card: {
+    width: '48%',
+    marginBottom: 15,
+    backgroundColor: '#1E1E1E',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  cardTitle: {
     marginLeft: 10,
-    backgroundColor: '#3F4448',
+    color: '#FFFFFF',
+  },
+  metricText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    marginBottom: 5,
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: '#333333',
+    borderRadius: 3,
+  },
+  progress: {
+    height: 6,
+    backgroundColor: '#4CAF50',
+    borderRadius: 3,
+  },
+  chartCard: {
+    marginTop: 20,
+    backgroundColor: '#1E1E1E',
+  },
+  chartTitle: {
+    color: '#FFFFFF',
+    marginBottom: 10,
+  },
+  chart: {
+    marginVertical: 8,
+    borderRadius: 16,
   },
 });
