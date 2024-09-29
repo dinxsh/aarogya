@@ -38,7 +38,7 @@ export default function HealthDashboardScreen() {
           <Title style={styles.cardTitle}>{title}</Title>
         </View>
         <Paragraph style={styles.metricText}>
-          {current >= 1000 ? `${(current / 1000).toFixed(1)}k` : current} / {goal >= 1000 ? `${(goal / 1000).toFixed(1)}k` : goal} {unit}
+          {current >= 1000 ? `${Math.floor(current / 1000)}k` : current} / {goal >= 1000 ? `${Math.floor(goal / 1000)}k` : goal} {unit}
         </Paragraph>
         <ProgressBar progress={current / goal} color="#FFFFFF" style={styles.progressBar} />
       </LinearGradient>
@@ -49,19 +49,24 @@ export default function HealthDashboardScreen() {
     <View style={styles.container}>
       <ScrollView>
         <LinearGradient
-          colors={['#2196F3', '#1976D2']}
+          colors={['#1E88E5', '#1976D2']}
           style={styles.header}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
           <View style={styles.headerContent}>
             <Text style={styles.headerText}>Dashboard</Text>
-            <TouchableOpacity onPress={() => console.log('Profile pressed')}>
-              <Image
-                source={require('../../assets/profile-image.jpg')}
-                style={styles.profileImage}
-              />
-            </TouchableOpacity>
+            <View style={styles.headerRightContent}>
+              <TouchableOpacity style={styles.askAIButton} onPress={() => navigation.navigate('ChatScreen')}>
+                <Text style={styles.askAIButtonText}>Ask AI</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => console.log('Profile pressed')}>
+                <Image
+                  source={require('../../assets/profile-image.jpg')}
+                  style={styles.profileImage}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         </LinearGradient>
         
@@ -108,7 +113,7 @@ export default function HealthDashboardScreen() {
           <Button
             mode="contained"
             icon="plus"
-            onPress={() => console.log('Add Goal pressed')}
+            onPress={() => navigation.navigate('GoalsScreen')}
             style={styles.button}
             labelStyle={styles.buttonLabel}
           >
@@ -149,6 +154,22 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#FFFFFF',
+  },
+  headerRightContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  askAIButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 8,
+  },
+  askAIButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   profileImage: {
     width: 50,
@@ -234,7 +255,7 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     marginHorizontal: 5,
-    backgroundColor: '#2196F3',
+    backgroundColor: '#1E88E5',
   },
   buttonLabel: {
     color: '#FFFFFF',

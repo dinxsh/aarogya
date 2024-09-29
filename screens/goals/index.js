@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
-import { Card, Title, Avatar, ProgressBar, Button, IconButton, Checkbox } from 'react-native-paper';
+import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { Provider as PaperProvider, Card, Title, Avatar, ProgressBar, Button, IconButton, Checkbox, FAB, Portal, Modal, TextInput } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
@@ -10,13 +11,15 @@ export default function GoalsScreen() {
     completed: 3,
     total: 5,
     goals: [
-      { id: 1, title: 'Run 5km', completed: false, icon: 'run' },
-      { id: 2, title: 'Meditate for 10 minutes', completed: true, icon: 'meditation' },
-      { id: 3, title: 'Drink 2L of water', completed: false, icon: 'water' },
-      { id: 4, title: 'Read for 30 minutes', completed: false, icon: 'book-open-variant' },
-      { id: 5, title: 'Sleep for 8 hours', completed: true, icon: 'sleep' },
+      { id: 1, title: 'Run 5km', completed: false, icon: 'run', category: 'Fitness' },
+      { id: 2, title: 'Meditate for 10 minutes', completed: true, icon: 'meditation', category: 'Wellness' },
+      { id: 3, title: 'Drink 2L of water', completed: false, icon: 'water', category: 'Health' },
+      { id: 4, title: 'Read for 30 minutes', completed: false, icon: 'book-open-variant', category: 'Personal' },
+      { id: 5, title: 'Sleep for 8 hours', completed: true, icon: 'sleep', category: 'Health' },
     ],
   });
+  const [modalVisible, setModalVisible] = useState(false);
+  const [newGoal, setNewGoal] = useState({ title: '', category: '', icon: 'flag' });
 
   useEffect(() => {
     // Fetch goals data here
@@ -28,6 +31,21 @@ export default function GoalsScreen() {
     );
     const completed = updatedGoals.filter(goal => goal.completed).length;
     setGoalsData({ ...goalsData, goals: updatedGoals, completed });
+  };
+
+  const addNewGoal = () => {
+    if (newGoal.title.trim() === '') return;
+    const updatedGoals = [
+      ...goalsData.goals,
+      { id: Date.now(), ...newGoal, completed: false },
+    ];
+    setGoalsData({
+      ...goalsData,
+      goals: updatedGoals,
+      total: updatedGoals.length,
+    });
+    setNewGoal({ title: '', category: '', icon: 'flag' });
+    setModalVisible(false);
   };
 
   const renderGoalsCard = () => (
@@ -56,53 +74,86 @@ export default function GoalsScreen() {
     </Card>
   );
 
-  return (
-    <ScrollView style={styles.container}>
-      <LinearGradient
-        colors={['#4CAF50', '#45A049']}
-        style={styles.header}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <View style={styles.headerContent}>
-          <Text style={styles.headerText}>Goals Tracker</Text>
-          <IconButton
-            icon="account-circle"
-            color="#FFFFFF"
-            size={24}
-            onPress={() => console.log('Profile pressed')}
+  const renderGoalItem = (goal) => (
+    <TouchableOpacity key={goal.id} onPress={() => toggleGoalCompletion(goal.id)}>
+      <Card style={[styles.goalItem, goal.completed && styles.completedGoalItem]}>
+        <Card.Content style={styles.goalItemContent}>
+          <Avatar.Icon size={40} icon={goal.icon} style={styles.goalIcon} color="#4CAF50" />
+          <View style={styles.goalTextContainer}>
+            <Text style={[styles.goalTitle, goal.completed && styles.completedGoalText]}>{goal.title}</Text>
+            <Text style={styles.goalCategory}>{goal.category}</Text>
+          </View>
+          <Checkbox
+            status={goal.completed ? 'checked' : 'unchecked'}
+            color="#4CAF50"
           />
-        </View>
-      </LinearGradient>
-      
-      {renderGoalsCard()}
-
-      <Card style={styles.goalsListCard}>
-        <Card.Content>
-          {goalsData.goals.map((goal) => (
-            <View key={goal.id} style={styles.goalItem}>
-              <Checkbox
-                status={goal.completed ? 'checked' : 'unchecked'}
-                onPress={() => toggleGoalCompletion(goal.id)}
-                color="#4CAF50"
-              />
-              <Avatar.Icon size={24} icon={goal.icon} style={styles.goalIcon} />
-              <Text style={[styles.goalTitle, goal.completed && styles.completedGoal]}>{goal.title}</Text>
-            </View>
-          ))}
         </Card.Content>
       </Card>
+    </TouchableOpacity>
+  );
 
-      <Button
-        mode="contained"
-        icon="plus"
-        onPress={() => console.log('Add Goal pressed')}
-        style={styles.addButton}
-        labelStyle={styles.buttonLabel}
-      >
-        Add Goal
-      </Button>
-    </ScrollView>
+  return (
+    <PaperProvider>
+      <View style={styles.container}>
+        <ScrollView>
+          <LinearGradient
+            colors={['#4CAF50', '#45A049']}
+            style={styles.header}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <View style={styles.headerContent}>
+              <Text style={styles.headerText}>Goals Tracker</Text>
+              <IconButton
+                icon="account-circle"
+                color="#FFFFFF"
+                size={28}
+                onPress={() => console.log('Profile pressed')}
+              />
+            </View>
+          </LinearGradient>
+          
+          {renderGoalsCard()}
+
+          <View style={styles.goalsListContainer}>
+            {goalsData.goals.map(renderGoalItem)}
+          </View>
+        </ScrollView>
+
+        <Portal>
+          <Modal visible={modalVisible} onDismiss={() => setModalVisible(false)} contentContainerStyle={styles.modalContainer}>
+            <Title style={styles.modalTitle}>Add New Goal</Title>
+            <TextInput
+              label="Goal Title"
+              value={newGoal.title}
+              onChangeText={(text) => setNewGoal({ ...newGoal, title: text })}
+              style={styles.input}
+            />
+            <TextInput
+              label="Category"
+              value={newGoal.category}
+              onChangeText={(text) => setNewGoal({ ...newGoal, category: text })}
+              style={styles.input}
+            />
+            <TextInput
+              label="Icon (MaterialCommunityIcons name)"
+              value={newGoal.icon}
+              onChangeText={(text) => setNewGoal({ ...newGoal, icon: text })}
+              style={styles.input}
+            />
+            <Button mode="contained" onPress={addNewGoal} style={styles.addButton}>
+              Add Goal
+            </Button>
+          </Modal>
+        </Portal>
+
+        <FAB
+          style={styles.fab}
+          icon="plus"
+          onPress={() => setModalVisible(true)}
+        />
+      </View>
+    </PaperProvider>
   );
 }
 
@@ -160,34 +211,62 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
   },
-  goalsListCard: {
-    margin: 15,
-    borderRadius: 20,
-    elevation: 4,
+  goalsListContainer: {
+    padding: 15,
   },
   goalItem: {
+    marginBottom: 10,
+    borderRadius: 10,
+    elevation: 2,
+  },
+  completedGoalItem: {
+    opacity: 0.7,
+  },
+  goalItemContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
   },
   goalIcon: {
     backgroundColor: '#E8F5E9',
-    marginRight: 10,
+    marginRight: 15,
+  },
+  goalTextContainer: {
+    flex: 1,
   },
   goalTitle: {
-    flex: 1,
     fontSize: 16,
+    fontWeight: 'bold',
   },
-  completedGoal: {
+  goalCategory: {
+    fontSize: 12,
+    color: '#757575',
+  },
+  completedGoalText: {
     textDecorationLine: 'line-through',
     color: '#888',
   },
-  addButton: {
-    margin: 15,
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 0,
+    bottom: 0,
     backgroundColor: '#4CAF50',
   },
-  buttonLabel: {
-    color: '#FFFFFF',
-    fontSize: 16,
+  modalContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    margin: 20,
+    borderRadius: 10,
+  },
+  modalTitle: {
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  input: {
+    marginBottom: 10,
+  },
+  addButton: {
+    marginTop: 10,
+    backgroundColor: '#4CAF50',
   },
 });

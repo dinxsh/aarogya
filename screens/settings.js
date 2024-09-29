@@ -1,11 +1,15 @@
-import * as React from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { getAuth, signOut } from 'firebase/auth'; 
-import { MaterialIcons } from '@expo/vector-icons'; // Import icons
+import React from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { getAuth, signOut } from 'firebase/auth';
+import { Card, Title, Paragraph, Avatar, Button, IconButton, Switch, Divider } from 'react-native-paper';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 export default function SettingsScreen() {
   const auth = getAuth();
   const user = auth.currentUser;
+  const navigation = useNavigation();
 
   const handleLogout = async () => {
     try {
@@ -16,85 +20,207 @@ export default function SettingsScreen() {
     }
   };
 
+  const renderSettingItem = (icon, title, value, onPress, type = 'button') => (
+    <Card style={styles.settingCard} onPress={onPress}>
+      <Card.Content style={styles.settingContent}>
+        <Avatar.Icon size={40} icon={icon} style={styles.settingIcon} color="#1E88E5" />
+        <View style={styles.settingInfo}>
+          <Title style={styles.settingTitle}>{title}</Title>
+          {type === 'button' && <Paragraph style={styles.settingValue}>{value}</Paragraph>}
+        </View>
+        {type === 'switch' && <Switch value={value} onValueChange={onPress} color="#1E88E5" />}
+        {type === 'button' && <MaterialCommunityIcons name="chevron-right" size={24} color="#757575" />}
+      </Card.Content>
+    </Card>
+  );
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Settings</Text>
-      {user && (
-        <View style={styles.card}>
-          <View style={styles.userInfo}>
-            <MaterialIcons name="person" size={24} color="#666666" />
-            <View style={styles.userDetails}>
-              <Text style={styles.userText}>Logged in as:</Text>
-              <Text style={styles.userEmail}>{user.email}</Text>
-              <Text style={styles.userText}>Last login:</Text>
-              <Text style={styles.userEmail}>{new Date(user.metadata.lastSignInTime).toLocaleString()}</Text>
-            </View>
+    <ScrollView style={styles.container}>
+      <LinearGradient
+        colors={['#1E88E5', '#1976D2']}
+        style={styles.header}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={styles.headerContent}>
+          <Text style={styles.headerText}>Settings</Text>
+          <View style={styles.headerRightContent}>
+            <TouchableOpacity style={styles.askAIButton} onPress={() => navigation.navigate('ChatScreen')}>
+              <Text style={styles.askAIButtonText}>Ask AI</Text>
+            </TouchableOpacity>
+            <IconButton
+              icon="account-circle"
+              color="#FFFFFF"
+              size={28}
+              onPress={() => console.log('Profile pressed')}
+            />
           </View>
         </View>
+      </LinearGradient>
+
+      {user && (
+        <Card style={styles.profileCard}>
+          <Card.Content style={styles.profileContent}>
+            <Avatar.Icon size={80} icon="account" style={styles.profileIcon} color="#1E88E5" />
+            <View style={styles.profileInfo}>
+              <Title style={styles.profileName}>{user.displayName || 'User'}</Title>
+              <Paragraph style={styles.profileEmail}>{user.email}</Paragraph>
+              <Paragraph style={styles.profileLastLogin}>
+                Last login: {new Date(user.metadata.lastSignInTime).toLocaleString()}
+              </Paragraph>
+            </View>
+          </Card.Content>
+        </Card>
       )}
-      <TouchableOpacity style={styles.button} onPress={handleLogout}>
-        <Text style={styles.buttonText}>Logout</Text>
-      </TouchableOpacity>
-    </View>
+
+      <View style={styles.settingsSection}>
+        <Title style={styles.sectionTitle}>Account</Title>
+        {renderSettingItem('account-edit', 'Edit Profile', 'Modify your information', () => console.log('Edit Profile'))}
+        {renderSettingItem('lock-reset', 'Change Password', 'Update your password', () => console.log('Change Password'))}
+      </View>
+
+      <Divider style={styles.divider} />
+
+      <View style={styles.settingsSection}>
+        <Title style={styles.sectionTitle}>Preferences</Title>
+        {renderSettingItem('bell', 'Notifications', true, () => console.log('Toggle Notifications'), 'switch')}
+        {renderSettingItem('theme-light-dark', 'Dark Mode', false, () => console.log('Toggle Dark Mode'), 'switch')}
+      </View>
+
+      <Divider style={styles.divider} />
+
+      <View style={styles.settingsSection}>
+        <Title style={styles.sectionTitle}>Support</Title>
+        {renderSettingItem('help-circle', 'Help Center', 'Get assistance', () => console.log('Help Center'))}
+        {renderSettingItem('information', 'About', 'App information', () => console.log('About'))}
+      </View>
+
+      <Button
+        mode="contained"
+        icon="logout"
+        onPress={handleLogout}
+        style={styles.logoutButton}
+        labelStyle={styles.buttonLabel}
+      >
+        Logout
+      </Button>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    padding: 20,
-    backgroundColor: '#FAFAFA',
-    margin:15
+    backgroundColor: '#F5F5F5',
   },
-  title: {
+  header: {
+    padding: 20,
+    paddingTop: 40,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerText: {
     fontSize: 28,
-    fontWeight: '600',
-    color: '#333333',
-    marginBottom: 30,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-    marginBottom: 30,
-    width: '100%',
-  },
-  userInfo: {
+  headerRightContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  userDetails: {
-    marginLeft: 10,
+  askAIButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 8,
   },
-  userText: {
-    fontSize: 16,
-    color: '#666666',
-    marginBottom: 5,
+  askAIButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
-  userEmail: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#333333',
-    marginBottom: 15,
+  profileCard: {
+    margin: 15,
+    borderRadius: 15,
+    elevation: 4,
   },
-  button: {
-    backgroundColor: '#E0E0E0',
-    padding: 15,
-    borderRadius: 8,
+  profileContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
-    width: '100%',
+    padding: 15,
   },
-  buttonText: {
-    color: '#333333',
+  profileIcon: {
+    backgroundColor: '#E3F2FD',
+    marginRight: 15,
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  profileName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#212121',
+  },
+  profileEmail: {
+    fontSize: 14,
+    color: '#757575',
+  },
+  profileLastLogin: {
+    fontSize: 12,
+    color: '#757575',
+    marginTop: 5,
+  },
+  settingsSection: {
+    marginTop: 20,
+    paddingHorizontal: 15,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#424242',
+  },
+  settingCard: {
+    marginBottom: 10,
+    borderRadius: 10,
+    elevation: 2,
+  },
+  settingContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  settingIcon: {
+    backgroundColor: '#E3F2FD',
+    marginRight: 15,
+  },
+  settingInfo: {
+    flex: 1,
+  },
+  settingTitle: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: 'bold',
+    color: '#212121',
+  },
+  settingValue: {
+    fontSize: 14,
+    color: '#757575',
+  },
+  divider: {
+    marginVertical: 20,
+  },
+  logoutButton: {
+    margin: 15,
+    marginTop: 30,
+    backgroundColor: '#FF5252',
+  },
+  buttonLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

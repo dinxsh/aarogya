@@ -3,10 +3,12 @@ import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity } from
 import { LineChart, BarChart } from 'react-native-chart-kit';
 import { Card, Title, Paragraph, Avatar, ProgressBar, Button, IconButton } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
 export default function StepsScreen() {
+  const navigation = useNavigation();
   const [stepsData, setStepsData] = useState({
     current: 8500,
     goal: 10000,
@@ -118,7 +120,7 @@ export default function StepsScreen() {
         <Button
           mode="contained"
           icon="target"
-          onPress={() => console.log('Set Goal pressed')}
+          onPress={() => navigation.navigate('GoalsScreen')}
           style={styles.button}
           labelStyle={styles.buttonLabel}
         >
