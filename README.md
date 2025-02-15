@@ -1,4 +1,3 @@
-# Aarogya ⚕️ Your Personal Health Sidekick
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
@@ -6,12 +5,14 @@
 [![GitHub issues](https://img.shields.io/github/issues/dinxsh/daiict_hack_2024)](https://github.com/dinxsh/daiict_hack_2024/issues)
 [![GitHub stars](https://img.shields.io/github/stars/dinxsh/daiict_hack_2024)](https://github.com/dinxsh/daiict_hack_2024/stargazers)
 
-Because who doesn't want a digital friend that nags you about your health? 😉
+![image](https://github.com/user-attachments/assets/e835cb8f-544b-4ae2-a744-8d117dc69191)
+
 
 Aarogya is a cross-platform app that tracks your **calories, steps, sleep & goals** in one simple-to-use **dashboard**. It's like having a personal trainer, nutritionist, and sleep coach in your pocket - minus the intimidating biceps and kale smoothies.
 
+
 <div align="center">
-   <a href="https://youtube.com/shorts/qW3PdDOFhf0?si=NK5jvx7V-DqBccrM">WATCH DEMO 🎥</a>
+   <a href="https://youtube.com/shorts/qW3PdDOFhf0?si=NK5jvx7V-DqBccrM"><b>WATCH VIDEO DEMO</b></a>
 </div>
 
 ## Features 📌
